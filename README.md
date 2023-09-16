@@ -36,13 +36,13 @@ If the wifi and MQTT configuration is correct, temperature and humidity sensors 
 
 ## Screenshots
 
-![sensors](sensors.png)
+![sensors](assets/sensors.png)
 
-![add](add.png)
+![add](assets/add.png)
 
-![home](homeview.png)
+![home](assets/homeview.png)
 
-![graph](graph.png)
+![graph](assets/graph.png)
 
 ## Resources
 
