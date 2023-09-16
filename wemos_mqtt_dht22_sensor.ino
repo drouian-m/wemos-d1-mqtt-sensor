@@ -7,6 +7,10 @@ DHTesp dht;
 StaticJsonDocument<200> doc;
 
 // Configuration
+// Sensor
+uint8_t pin = D2;
+unsigned long interval = 30000;
+
 // Wifi connection
 const char* ssid = "Wifi SSID";
 const char* password = "Wifi password";
@@ -18,16 +22,15 @@ const char* mqtt_server = "127.0.0.1"; // Update the IP with your MQTT server
 // const char* mqtt_password = "pass";
 
 // MQTT Sensors
-const char* sensor_uid = "sensor id";
-const char* topic = "mqtt topic";
-const char* sensor_location = "location";
+String sensor_location = "location";
+String sensor_uid = "wemos_" + sensor_location;
+String topic = "sensor/temperature/" + sensor_location;
 
 // Home assistant discovery
-const char* temperature_discovery_topic = "homeassistant/sensor/home_sensor_xxxx/temperature/config";
-const char* temperature_readable_name = "YOURSENSORNAME temperature";
-const char* humidity_discovery_topic = "homeassistant/sensor/home_sensor_xxxx/humidity/config";
-const char* humidity_readable_name = "YOURSENSORNAME humidity";
-
+String temperature_discovery_topic = "homeassistant/sensor/home_sensor_" + sensor_location + "/temperature/config";
+String temperature_readable_name = "YOURSENSORNAME " + sensor_location;
+String humidity_discovery_topic = "homeassistant/sensor/home_sensor_" + sensor_location + "/humidity/config";
+String humidity_readable_name = "YOURSENSORNAME " + sensor_location;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -52,7 +55,7 @@ void setup_wifi() {
 
 void reconnect() {
   while (!client.connected()) {
-    if (client.connect(sensor_uid, mqtt_user, mqtt_password)) {
+    if (client.connect(sensor_uid.c_str(), mqtt_user, mqtt_password)) {
       Serial.println("connected");
       send_MQTT_discovery_sensors();
     } else {
@@ -100,7 +103,7 @@ void send_temp() {
     doc["humidity"] = h;
     char JSONmessageBuffer[200];
     serializeJson(doc, JSONmessageBuffer);
-    client.publish(topic, JSONmessageBuffer);
+    client.publish(topic.c_str(), JSONmessageBuffer);
   }
 }
 
@@ -108,7 +111,7 @@ void setup() {
   Serial.begin(115200);
   setup_wifi();
   client.setServer(mqtt_server, 1883);
-  dht.setup(D2, DHTesp::DHT22);
+  dht.setup(pin, DHTesp::DHT22);
 }
 
 void loop() {
@@ -117,5 +120,5 @@ void loop() {
   }
   send_temp();
   client.loop();
-  delay(10000);
+  delay(interval);
 }
