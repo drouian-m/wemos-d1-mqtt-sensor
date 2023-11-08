@@ -1,15 +1,23 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
-#include "DHTesp.h"
+#include "DHT.h"
 
-DHTesp dht;
+#define DHTTYPE DHT22
+#define LED 2
+
 StaticJsonDocument<200> doc;
 
 // Configuration
 // Sensor
-uint8_t pin = D2;
-unsigned long interval = 30000;
+uint8_t pin = D4;
+DHT dht(pin, DHTTYPE);
+
+unsigned long interval = 10 * 60000; // 10 minutes
+
+// Offsets
+long temp_offset = -4.8;
+long hum_offset = 10;
 
 // Wifi connection
 const char* ssid = "Wifi SSID";
@@ -87,8 +95,8 @@ void send_MQTT_discovery_sensors() {
 }
 
 void send_temp() {
-  float h = dht.getHumidity();
-  float t = dht.getTemperature();
+  float h = dht.readHumidity() + hum_offset;
+  float t = dht.readTemperature() + temp_offset;
 
   // Values are printed on the serial console for debugging
   Serial.print("{\"humidity\": ");
@@ -111,10 +119,14 @@ void setup() {
   Serial.begin(115200);
   setup_wifi();
   client.setServer(mqtt_server, 1883);
-  dht.setup(pin, DHTesp::DHT22);
+  pinMode(LED, OUTPUT);
+  pinMode(pin, INPUT);
+  dht.begin();
+  delay(5000);
 }
 
 void loop() {
+  digitalWrite(LED, LOW);
   if (!client.connected()) {
     reconnect();
   }

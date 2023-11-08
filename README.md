@@ -12,8 +12,14 @@ Fill the configuration variable sections with your informations.
 ```cpp
 // Configuration
 // Sensor
-uint8_t pin = D2;
-unsigned long interval = 30000;
+uint8_t pin = D4;
+DHT dht(pin, DHTTYPE);
+
+unsigned long interval = 10 * 60000; // 10 minutes
+
+// Offsets (to fix temperature and humidity delta)
+long temp_offset = -4.8;
+long hum_offset = 10;
 
 // Wifi connection
 const char* ssid = "Wifi SSID";
